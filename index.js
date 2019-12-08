@@ -2,23 +2,17 @@
 
   glUtils.SL.init({ callback: function() { main(); } });
   function main() {
-
     var theta = [0, 0, 0];
     var translate = [0, 0, 0];
     var tengah = [0.5, -0.3, 0];
-
     var lastX, lastY, dragging;
- 
     var scale = 0;
     var tambah = 0.0027;
-
     var tambahX = 0.01;
     var tambahY = 0.01;
     var tambahZ = 0.01;
-    
     var xAxis = 0;
     var yAxis = 1;
-    
     var canvas = document.getElementById("glcanvas");
     var gl = glUtils.checkWebGL(canvas);
 
@@ -34,6 +28,7 @@
     init1();
 
 
+    //melakukan inisialisasi yang akan digambar dan fungsi rendernya
     function init1() {    
         clear();
         drawTri(program2);
@@ -41,13 +36,15 @@
         requestAnimationFrame(init1);
     }
 
+    //fungsi untuk membersihkan layar
     function clear()
     {
       gl.clearColor(0, 0, 0, 1);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.enable(gl.DEPTH_TEST);
     }
-    //UNTUK GAMBAR TRI
+
+    //fungsi untuk gambar huruf
     function drawTri(program) {
       var n = initBuffersTri(program);
       if (n < 0) {
@@ -57,7 +54,7 @@
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, n);
     }
 
-    //UNTUK GAMBAR LINE
+    //fungsi untuk menggambar kubus
     function drawLine(program) {
       var n = initBuffersLine(program);
       if (n < 0) {
@@ -67,7 +64,7 @@
       gl.drawArrays(gl.TRIANGLES, 0, n);
     }
 
-    //UNTUK MOUSE NYA
+    //fungsi untuk pergerakan mouse
     function onMouseDown(event) {
       var x = event.clientX;
       var y = event.clientY;
@@ -101,7 +98,7 @@
     document.addEventListener('mouseup', onMouseUp);
     document.addEventListener('mousemove', onMouseMove);
 
-    //UNTUK INISIALISASI TEXTURE
+    //fungsi inisialisasi texture untuk cube
     function initTexture(texture) {
       var imageSource = 'images/Group.jpg';
       var image = new Image();
@@ -119,10 +116,65 @@
       image.src = imageSource;
     }
 
+    //fungsi scale
+    function tambahscale()
+    {
+      if (scale > 1){
+        tambah = -0.0027
+      }
+      else if (scale < -1){
+        tambah = 0.0027
+      }
+      scale += tambah;
+    }
+
+    //fungsi transisi
+    function perpindahan(translate){
+       //translasi terhadap x
+       if (translate[0] + 0.2 > 0.55 || translate[0] - 0.2 < -0.55 ) {
+        tambahX *= -1;
+      }
+      translate[0] += tambahX;
+
+      tengah += translate[0];
+
+       //translasi terhadap y
+      if (translate[1] + 0.18 > 0.55 || translate[1] - 0.18 < -0.55 ) {
+        tambahY *= -1;
+      }
+      translate[1] += tambahY;
+
+       //translasi terhadap z
+      if (translate[2] > 0.55 || translate[2] < -0.55 ) {
+        tambahZ *= -1;
+      }
+      translate[2] += tambahZ;
+    }
+
+    //fungsi menambahkan cahaya
+    function cahaya(program){
+      var lightColorLoc = gl.getUniformLocation(program, 'lightColor');
+      var lightPositionLoc = gl.getUniformLocation(program, 'lightPosition');
+      var ambientColorLoc = gl.getUniformLocation(program, 'ambientColor');
+      var lightColor = [1, 1, 1];
+      var lightPosition = [translate[0], translate[1], -2 + translate[2]];
+      //nrp 154027
+      var ambientColor = glMatrix.vec3.fromValues(0.15, 0.40, 0.27);
+      gl.uniform3fv(lightColorLoc, lightColor);
+      gl.uniform3fv(lightPositionLoc, lightPosition);
+      gl.uniform3fv(ambientColorLoc, ambientColor);
+    }
+
     function initBuffersLine(program) {
               
     var cubeVertices = [
 
+     -0.5, -0.5, -0.5,     0.4, 1.0,  0.0, 0.0, -1.0, 
+     -0.5,  0.5, -0.5,     0.4, 0.0,  0.0, 0.0, -1.0,
+      0.5,  0.5, -0.5,     0.6, 0.0,  0.0, 0.0, -1.0,
+     -0.5, -0.5, -0.5,     0.4, 1.0,  0.0, 0.0, -1.0,
+      0.5,  0.5, -0.5,     0.6, 0.0,  0.0, 0.0, -1.0,
+      0.5, -0.5, -0.5,     0.6, 1.0,  0.0, 0.0, -1.0,
 
       0.5,  0.5,  0.5,     0.0, 1.0,  1.0, 0.0, 0.0, 
       0.5, -0.5,  0.5,     0.0, 0.0,  1.0, 0.0, 0.0,
@@ -137,13 +189,6 @@
       0.5, -0.5,  0.5,     0.2, 1.0,  0.0, -1.0, 0.0,
      -0.5, -0.5, -0.5,     0.4, 0.0,  0.0, -1.0, 0.0,
       0.5, -0.5, -0.5,     0.4, 1.0,  0.0, -1.0, 0.0,
-
-     -0.5, -0.5, -0.5,     0.4, 1.0,  0.0, 0.0, -1.0, 
-     -0.5,  0.5, -0.5,     0.4, 0.0,  0.0, 0.0, -1.0,
-      0.5,  0.5, -0.5,     0.6, 0.0,  0.0, 0.0, -1.0,
-     -0.5, -0.5, -0.5,     0.4, 1.0,  0.0, 0.0, -1.0,
-      0.5,  0.5, -0.5,     0.6, 0.0,  0.0, 0.0, -1.0,
-      0.5, -0.5, -0.5,     0.6, 1.0,  0.0, 0.0, -1.0,
 
      -0.5,  0.5, -0.5,     0.6, 1.0,  -1.0, 0.0, 0.0, 
      -0.5, -0.5, -0.5,     0.6, 0.0,  -1.0, 0.0, 0.0,
@@ -187,8 +232,8 @@
 
       var fovy = glMatrix.glMatrix.toRadian(90.0);
       var aspect = canvas.width / canvas.height;
-      var near = 0.5;
-      var far = 10.0;
+      var near = 0.3;
+      var far = 12.0;
       glMatrix.mat4.perspective(projection,
         fovy,
         aspect,
@@ -201,8 +246,11 @@
 
       var vPosition = gl.getAttribLocation(program, 'vPosition');
       var vNormal = gl.getAttribLocation(program, 'vNormal');
+      
+      //memberikan cahaya ke cube
       cahaya(program);
-        var vTexCoord = gl.getAttribLocation(program, 'vTexCoord');
+      
+      var vTexCoord = gl.getAttribLocation(program, 'vTexCoord');
         gl.vertexAttribPointer(
           vPosition,  // variabel yang memegang posisi attribute di shader
           3,          // jumlah elemen per attribute
@@ -223,6 +271,7 @@
         // Uniform untuk tekstur
         var sampler0Loc = gl.getUniformLocation(program, 'sampler0');
         gl.uniform1i(sampler0Loc, 0);
+
         // Inisialisasi tekstur
         var texture = gl.createTexture();
   
@@ -234,12 +283,12 @@
 
       var nmLoc = gl.getUniformLocation(program, 'normalMatrix');
 
-      // Perhitungan modelMatrix untuk vektor normal
+      //perhitungan modelMatrix untuk vektor normal
       var nm = glMatrix.mat3.create();
       glMatrix.mat3.normalFromMat4(nm, mm);
       gl.uniformMatrix3fv(nmLoc, false, nm);
 
-      //Rotation Matrix
+      //rotasi matrix
       var mvpLoc = gl.getUniformLocation(program, 'MVPMatrix');
       var mvp = glMatrix.mat4.create();
       glMatrix.mat4.multiply(mvp,view,mm);
@@ -312,29 +361,33 @@
 
       var vPosition = gl.getAttribLocation(program, 'vPosition');
       var vNormal = gl.getAttribLocation(program, 'vNormal');
-
+      
+      //memberikan cahaya pada huruf
       cahaya(program);
 
-        var vColor = gl.getAttribLocation(program, 'vColor');
-        tambahscale();
-        gl.vertexAttribPointer(
-            vPosition, // Variable yang memegang posisi atribut di shader
-            2, // Jumlah element per attribut
-            gl.FLOAT, // tipe data attribut
-            gl.FALSE, 
-            5 * Float32Array.BYTES_PER_ELEMENT, // ukuran byte tiap vertex
-            0 //offset dari posisi elemen di array
-        );
-    
-        gl.vertexAttribPointer(
-            vColor,
-            3,
-            gl.FLOAT,
-            gl.FALSE,
-            5 * Float32Array.BYTES_PER_ELEMENT,
-            2 * Float32Array.BYTES_PER_ELEMENT
-        );
+      var vColor = gl.getAttribLocation(program, 'vColor');
+      //menambah scale pada huruf
+      tambahscale();
 
+      gl.vertexAttribPointer(
+        vPosition, // Variable yang memegang posisi atribut di shader
+        2, // Jumlah element per attribut
+        gl.FLOAT, // tipe data attribut
+        gl.FALSE, 
+        5 * Float32Array.BYTES_PER_ELEMENT, // ukuran byte tiap vertex
+        0 //offset dari posisi elemen di array
+      );
+    
+      gl.vertexAttribPointer(
+        vColor,
+        3,
+        gl.FLOAT,
+        gl.FALSE,
+        5 * Float32Array.BYTES_PER_ELEMENT,
+        2 * Float32Array.BYTES_PER_ELEMENT
+      );
+
+      //perpindahan posisi
        perpindahan(translate);
 
         var mm = glMatrix.mat4.create();
@@ -349,12 +402,14 @@
       gl.vertexAttribPointer(vNormal, 3, gl.FLOAT, gl.FALSE, 
         8 * Float32Array.BYTES_PER_ELEMENT, 5 * Float32Array.BYTES_PER_ELEMENT);
 
+      //perhitungan modelMatrix untuk vektor normal
       var nmLoc = gl.getUniformLocation(program, 'normalMatrix');
 
       var nm = glMatrix.mat3.create();
       glMatrix.mat3.normalFromMat4(nm, mm);
       gl.uniformMatrix3fv(nmLoc, false, nm);
 
+      //rotasi matrix
       var mvpLoc = gl.getUniformLocation(program, 'MVPMatrix');
       var mvp = glMatrix.mat4.create();
       glMatrix.mat4.multiply(mvp,view,mm);
@@ -368,49 +423,7 @@
       gl.enableVertexAttribArray(vNormal);
       return n;
     }
-    function tambahscale()
-    {
-      if (scale > 1){
-        tambah = -0.0027
-      }
-      else if (scale < -1){
-        tambah = 0.0027
-      }
-      scale += tambah;
-    }
-    function perpindahan(translate){
-       //translasi terhadap x
-       if (translate[0] + 0.15 > 0.5 || translate[0] - 0.15 < -0.5 ) {
-        tambahX *= -1;
-      }
-      translate[0] += tambahX;
 
-      tengah += translate[0];
-
-       //translasi terhadap y
-      if (translate[1] + 0.2 > 0.5 || translate[1] - 0.2 < -0.5 ) {
-        tambahY *= -1;
-      }
-      translate[1] += tambahY;
-
-       //translasi terhadap z
-      if (translate[2] > 0.5 || translate[2] < -0.5 ) {
-        tambahZ *= -1;
-      }
-      translate[2] += tambahZ;
-    }
-    function cahaya(program){
-      var lightColorLoc = gl.getUniformLocation(program, 'lightColor');
-      var lightPositionLoc = gl.getUniformLocation(program, 'lightPosition');
-      var ambientColorLoc = gl.getUniformLocation(program, 'ambientColor');
-      var lightColor = [1, 1, 1];
-      var lightPosition = [translate[0], translate[1], -2 + translate[2]];
-      //nrp 154027
-      var ambientColor = glMatrix.vec3.fromValues(0.15, 0.40, 0.27);
-      gl.uniform3fv(lightColorLoc, lightColor);
-      gl.uniform3fv(lightPositionLoc, lightPosition);
-      gl.uniform3fv(ambientColorLoc, ambientColor);
-    }
 
   }
 
